@@ -1,20 +1,45 @@
 package me.fit.mefit.controllers;
 
+import me.fit.mefit.models.Role;
+import me.fit.mefit.models.RoleEnum;
+import me.fit.mefit.models.User;
+import me.fit.mefit.payload.request.SignupRequest;
+import me.fit.mefit.payload.response.MessageResponse;
+import me.fit.mefit.repositories.RoleRepository;
+import me.fit.mefit.repositories.UserRepository;
+import me.fit.mefit.security.jwt.JwtUtils;
 import me.fit.mefit.utils.ApiPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.HashSet;
+import java.util.Set;
 
 @RequestMapping(ApiPaths.USER_PATH)
 @RestController
 public class UserController {
     Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    /*
-    @AutoWired
-    private UserRepository userRepository;
-    */
+    @Autowired
+    AuthenticationManager authenticationManager;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    RoleRepository roleRepository;
+
+    @Autowired
+    PasswordEncoder encoder;
+
+    @Autowired
+    JwtUtils jwtUtils;
 
     /*
         Returns 303 See Other with the location header set to the URL of the currently
@@ -35,8 +60,26 @@ public class UserController {
     */
 
     @PostMapping()
-    public ResponseEntity<String> createUser( /*@RequestBody Type type */) {
-        return ResponseEntity.ok("Not Implemented");
+    public ResponseEntity<?> createUser(@Valid @RequestBody SignupRequest signupRequest) {
+        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken"));
+        }
+
+        User user = new User(
+                encoder.encode(signupRequest.getPassword()),
+                signupRequest.getFirstname(),
+                signupRequest.getLastname(),
+                signupRequest.getEmail()
+        );
+
+        Set<Role> roles = new HashSet<>();
+        Role role = roleRepository.findByRole(RoleEnum.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+        roles.add(role);
+
+        user.setRoles(roles);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new MessageResponse("User registered successfully"));
     }
 
     /*

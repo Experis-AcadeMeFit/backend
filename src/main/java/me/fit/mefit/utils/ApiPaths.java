@@ -9,4 +9,6 @@ public class ApiPaths {
     public static final String GOAL_PATH = BASE_PATH + "/goal";
     public static final String PROFILE_PATH = BASE_PATH + "/profile";
     public static final String USER_PATH = BASE_PATH + "/user";
+    public static final String PUBLIC_PATH = LOGIN_PATH + "/**";
+    public static final String PROTECTED_PATH = BASE_PATH + "/**";
 }

@@ -4,6 +4,7 @@ import me.fit.mefit.utils.ApiPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping(ApiPaths.EXERCISE_PATH)
@@ -19,7 +20,9 @@ public class ExerciseController {
     /*
         Returns a list of currently available exercises arranged alphabetically by Target muscle group.
     */
+
     @GetMapping()
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> getExercises() {
         return ResponseEntity.ok("Not Implemented");
     }
