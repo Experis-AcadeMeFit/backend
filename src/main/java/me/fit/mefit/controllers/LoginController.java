@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -86,5 +87,12 @@ public class LoginController {
     public void InvalidArgumentHandler(HttpServletRequest req, Exception ex) {
         logger.info("Invalid request received: " + req.getRequestURI());
         logger.info("Invalid request received: " + req.getMethod());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus( HttpStatus.UNAUTHORIZED )
+    public void UnauthorizedHandler(HttpServletRequest req, Exception ex) {
+        logger.info("Unauthorized request received: " + req.getRequestURI());
+        logger.info("Unauthorized request received: " + req.getMethod());
     }
 }
