@@ -71,7 +71,7 @@ public class UserController {
 
         return ResponseEntity
                 .status(HttpStatus.SEE_OTHER)
-                .header("Location", ApiPaths.USER_PATH + "/" + user.getId())
+                .location(URI.create(ApiPaths.USER_PATH + "/" + user.getId()))
                 .build();
     }
 
