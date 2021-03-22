@@ -2,19 +2,24 @@ package me.fit.mefit.payload.request;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 public class SignupRequest {
     @NotBlank
     @Email
+    @Size(max = 50)
     private String email;
 
     @NotBlank
+    @Size(max = 30)
     private String firstname;
 
     @NotBlank
+    @Size(max = 30)
     private String lastname;
 
     @NotBlank
+    @Size(max = 120)
     private String password;
 
     public String getEmail() {
