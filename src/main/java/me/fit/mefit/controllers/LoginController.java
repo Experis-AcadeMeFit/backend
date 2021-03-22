@@ -9,6 +9,7 @@ import me.fit.mefit.utils.ApiPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,11 +18,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,5 +70,12 @@ public class LoginController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), roles));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus( HttpStatus.BAD_REQUEST )
+    public void InvalidArgumentHandler(HttpServletRequest req, Exception ex) {
+        logger.info("Invalid request received: " + req.getRequestURI());
+        logger.info("Invalid request received: " + req.getMethod());
     }
 }

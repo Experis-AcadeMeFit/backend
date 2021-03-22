@@ -1,6 +1,8 @@
 package me.fit.mefit.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import me.fit.mefit.models.Role;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 
@@ -11,12 +13,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Where(clause = "deleted = 0") //Use soft delete
 @Table( name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = "email"), @UniqueConstraint(columnNames = "email")})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @JsonIgnore
     @NotBlank
     @Size(max = 120)
     private String password;
@@ -34,6 +38,9 @@ public class User {
     @Size(max = 50)
     private String email;
 
+    @JsonIgnore
+    private int deleted = 0;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
@@ -47,6 +54,14 @@ public class User {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+    }
+
+    public int getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted() {
+        this.deleted = 1;
     }
 
     public long getId() {
