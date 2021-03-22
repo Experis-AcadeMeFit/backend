@@ -1,5 +1,9 @@
 package me.fit.mefit.controllers;
 
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Bucket4j;
+import io.github.bucket4j.Refill;
 import me.fit.mefit.payload.request.LoginRequest;
 import me.fit.mefit.payload.response.JwtResponse;
 import me.fit.mefit.repositories.RoleRepository;
@@ -23,13 +27,18 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @RequestMapping(ApiPaths.LOGIN_PATH)
 @RestController
 public class LoginController {
-    Logger logger = LoggerFactory.getLogger(LoginController.class);
+
+
+    private Logger logger = LoggerFactory.getLogger(LoginController.class);
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -46,7 +55,7 @@ public class LoginController {
     @Autowired
     JwtUtils jwtUtils;
 
-    /*
+       /*
         Authenticates a user. Accepts appropriate parameters in the request body as application/json.
 
         A failed authentication attempt should prompt a 401 Unauthorized response. This
