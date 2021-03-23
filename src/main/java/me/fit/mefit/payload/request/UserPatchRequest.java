@@ -1,27 +1,21 @@
 package me.fit.mefit.payload.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import me.fit.mefit.models.Role;
 import me.fit.mefit.models.RoleEnum;
-
-import javax.persistence.*;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 
 public class UserPatchRequest {
 
-    @Size(max = 30)
+    @Size(max = 30, min = 1)
     private String firstName;
 
-    @Size(max = 30)
+    @Size(max = 30, min = 1)
     private String lastName;
 
     @Email
-    @Size(max = 50)
+    @Size(max = 50, min = 1)
     private String email;
 
     private List<RoleEnum> roles;
@@ -29,7 +23,7 @@ public class UserPatchRequest {
     public UserPatchRequest() {
     }
 
-    public UserPatchRequest(@Size(max = 30) String firstName, @Size(max = 30) String lastName, @Email @Size(max = 50) String email) {
+    public UserPatchRequest(@Size(max = 30, min = 1) String firstName, @Size(max = 30, min = 1) String lastName, @Email @Size(max = 50, min = 1) String email) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;

@@ -1,7 +1,9 @@
 package me.fit.mefit.models;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import me.fit.mefit.models.Role;
+import me.fit.mefit.utils.ApiPaths;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -9,6 +11,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,6 +21,7 @@ import java.util.Set;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private long id;
 
     @JsonIgnore
@@ -45,8 +49,11 @@ public class User {
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    public User() {
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "profile_id", referencedColumnName = "id")
+    private Profile profile;
 
+    public User() {
     }
 
     public User(@NotBlank @Size(max = 120) String password, @NotBlank @Size(max = 30) String firstName, @NotBlank @Size(max = 30) String lastName, @NotBlank @Email @Size(max = 50) String email) {
@@ -54,6 +61,13 @@ public class User {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+    }
+
+    @JsonGetter("profile")
+    public String jsonProfile() {
+        if (profile != null)
+            return ApiPaths.PROFILE_PATH + "/" + profile.getId();
+        return null;
     }
 
     public int getDeleted() {
@@ -74,6 +88,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Profile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
     }
 
     public String getFirstName() {
