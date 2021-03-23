@@ -82,7 +82,7 @@ paths:
         401:
           description: 'not logged in'
         403:
-          description: 'User is not admin or fetching self'
+          description: 'User is not admin and not fetching self'
 
     patch:
       summary: 'Partial update of user'
@@ -107,7 +107,6 @@ paths:
           description: 'not logged in'
         403:
           description: 'Trying to update different user when not admin'
-
 
     delete:
       summary: 'Delete user'
@@ -150,6 +149,100 @@ paths:
           description: 'not logged in'
         403:
           description: 'Trying to update password of other user when not admin'
+  /profiles:
+    get:
+      summary: 'Get profile of logged in user'
+      operationId: 'getCurrentProfile'
+      responses:
+        303:
+          description: 'See Other - URL to profile'
+          headers:
+            Location:
+              type: string
+              description: 'Path to the logged in user'
+        401:
+          description: 'Unauthorized - Not logged in'
+    post:
+      summary: 'Create new profile'
+      operationId: "createProfile"
+      consumes:
+        - 'application/json'
+      parameters:
+        - in: body
+          name: 'ProfileCreateRequest'
+          required: true
+          schema:
+            $ref: '#/definitions/ProfileCreateRequest'
+      responses:
+        201:
+          description: 'OK - Profile Created'
+          headers:
+            Location:
+              type: string
+              description: 'Path to the created profile'
+        400:
+          description: 'Bad Request'
+        403:
+          description: 'Forbidden - Trying to create profile for other user when not admin'
+  /profiles/{id}:
+    get:
+      summary: 'Get profile by id'
+      operationId: 'getProfile'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of Profile to fetch"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: 'Success'
+          schema:
+            $ref: '#/definitions/Profile'
+        401:
+          description: 'not logged in'
+        403:
+          description: 'User is not admin and not fetching own profile'
+    patch:
+      summary: 'Partial update of profile'
+      operationId: 'updateProfile'
+      consumes:
+        - 'application/json'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of Profile to update"
+          required: true
+          type: "integer"
+        - in: body
+          name: 'ProfilePatchRequest'
+          required: true
+          schema:
+            $ref: '#/definitions/ProfilePatchRequest'
+      responses:
+        201:
+          description: 'profile updated'
+        401:
+          description: 'not logged in'
+        403:
+          description: 'User is not admin and is not updating own profile'
+    delete:
+      summary: 'Delete profile'
+      operationId: 'deleteProfile'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of profile to delete"
+          required: true
+          type: "integer"
+      responses:
+        201:
+          description: 'profile deleted'
+        401:
+          description: 'not logged in'
+        403:
+          description: 'User is not admin and is not deleting own profile'
+
 definitions:
   LoginRequest:
     type: object
@@ -234,6 +327,11 @@ definitions:
       lastname:
         type: string
         maxLength: 30
+      profile:
+        type:
+         - string
+         - 'null'
+        description: reference to the profile belonging to this user or null
       roles:
         type: array
         items:
@@ -244,3 +342,94 @@ definitions:
             role:
               type: string
               enum: [ ROLE_USER, ROLE_CONTRIBUTOR, ROLE_ADMIN ]
+  Address:
+    type: object
+    properties:
+      addressLine1:
+        type: string
+        maxLength: 100
+      addressLine2:
+        type: string
+        maxLength: 100
+      addressLine3:
+        type: string
+        maxLength: 100
+      postalCode:
+        type: string
+        maxLength: 20
+      city:
+        type: string
+        maxLength: 30
+      country:
+        type: string
+        maxLength: 40
+    required:
+      - addressLine1
+      - postalCode
+      - city
+      - country
+
+  AddressPatchRequest:
+    type: object
+    properties:
+      addressLine1:
+        type: string
+        maxLength: 100
+      addressLine2:
+        type: string
+        maxLength: 100
+      addressLine3:
+        type: string
+        maxLength: 100
+      postalCode:
+        type: string
+        maxLength: 20
+      city:
+        type: string
+        maxLength: 30
+      country:
+        type: string
+        maxLength: 40
+
+  Profile:
+    type: object
+    properties:
+      id:
+        type: integer
+      user:
+        type: string
+        description: reference to the user this profile belongs to
+      address:
+        type: object
+        $ref: '#/definitions/Address'
+      weight:
+        type: integer
+      height:
+        type: integer
+
+  ProfileCreateRequest:
+    type: object
+    properties:
+      userId:
+        type: integer
+        description: The id of the user this profile should belong to
+      address:
+        type: object
+        $ref: '#/definitions/Address'
+      weight:
+        type: integer
+      height:
+        type: integer
+  ProfilePatchRequest:
+    type: object
+    properties:
+      user:
+        type: string
+        description: reference to the user this profile belongs to
+      address:
+        type: object
+        $ref: '#/definitions/AddressPatchRequest'
+      weight:
+        type: integer
+      height:
+        type: integer
