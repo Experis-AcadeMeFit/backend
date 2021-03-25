@@ -1,0 +1,463 @@
+openapi: '3.0.1'
+info:
+  title: MeFit API
+  description: API for the MeFit Application
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:{port}/{basePath}/v{version}'
+    description: 'Dev'
+    variables:
+      protocol:
+        description: 'remember to set port to 443 for https'
+        default: 'http'
+        enum:
+          - 'http'
+          - 'https'
+      port:
+        default: '8080'
+      version:
+        default: '1'
+      basePath:
+        default: 'api'
+  - url: 'https://prod-goes-here.com/api/v1'
+    description: 'Prod'
+paths:
+  /login:
+    post:
+      summary: 'POST api/v1/login'
+      operationId: "login"
+      requestBody:
+          description: 'loginRequest'
+          required: true
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/LoginRequest'
+      responses:
+        200:
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/JwtResponse'
+        400:
+          description: 'Bad Request'
+        401:
+          description: 'Unauthorized'
+        429:
+          description: 'Too Many Requests'
+  /users:
+    post:
+      summary: 'Register a new user.'
+      operationId: "createUser"
+      requestBody:
+        description: 'User to sign up'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        201:
+          description: 'OK - User Created'
+          headers:
+            Location:
+              description: 'Path to the created user'
+              schema:
+                type: string
+        400:
+          description: 'Bad Request - Email already exists or missing/invalid fields in request'
+
+    get:
+      summary: 'Get logged in user'
+      operationId: 'getCurrentUser'
+      responses:
+        303:
+          description: 'See Other - URL to logged in user'
+          headers:
+            Location:
+              description: 'Path to the logged in user'
+              schema:
+                type: string
+        401:
+          description: 'Unauthorized - Not logged in'
+
+  /users/{id}:
+    get:
+      summary: 'Get user by id'
+      operationId: 'getUser'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of User to fetch"
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: 'Success'
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          description: 'not logged in'
+        403:
+          description: 'User is not admin and not fetching self'
+
+    patch:
+      summary: 'Partial update of user'
+      operationId: 'updateUser'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of User to update"
+          required: true
+          schema:
+            type: "integer"
+      requestBody:
+        description: 'Object to patch user with'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/UserPatchRequest'
+      responses:
+        201:
+          description: 'User updated'
+        401:
+          description: 'not logged in'
+        403:
+          description: 'Trying to update different user when not admin'
+
+    delete:
+      summary: 'Delete user'
+      operationId: 'deleteUser'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of User to delete"
+          required: true
+          schema:
+            type: integer
+      responses:
+        201:
+          description: 'User deleted'
+        401:
+          description: 'not logged in'
+        403:
+          description: 'Trying to delete different user when not admin'
+
+  /users/{id}/update_password:
+    post:
+      summary: ''
+      operationId: 'updatePassword'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of User to change password of"
+          required: true
+          schema:
+            type: "integer"
+      requestBody:
+        description: 'New password'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/definitions/PasswordChangeRequest'
+      responses:
+        201:
+          description: 'Password updated'
+        401:
+          description: 'not logged in'
+        403:
+          description: 'Trying to update password of other user when not admin'
+  /profiles:
+    get:
+      summary: 'Get profile of logged in user'
+      operationId: 'getCurrentProfile'
+      responses:
+        303:
+          description: 'See Other - URL to profile'
+          headers:
+            Location:
+              description: 'Path to the logged in user'
+              schema:
+                type: string
+        401:
+          description: 'Unauthorized - Not logged in'
+    post:
+      summary: 'Create new profile'
+      operationId: "createProfile"
+      requestBody:
+        description: 'Profile to create'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#!/components/schemas/ProfileCreateRequest'
+      responses:
+        201:
+          description: 'OK - Profile Created'
+          headers:
+            Location:
+              description: 'Path to the created profile'
+              schema:
+                type: string
+        400:
+          description: 'Bad Request'
+        403:
+          description: 'Forbidden - Trying to create profile for other user when not admin'
+  /profiles/{id}:
+    get:
+      summary: 'Get profile by id'
+      operationId: 'getProfile'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of Profile to fetch"
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: 'Success'
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Profile'
+        401:
+          description: 'not logged in'
+        403:
+          description: 'User is not admin and not fetching own profile'
+    patch:
+      summary: 'Partial update of profile'
+      operationId: 'updateProfile'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of Profile to update"
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'The object to patch the profile with'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/ProfilePatchRequest'
+      responses:
+        201:
+          description: 'profile updated'
+        401:
+          description: 'not logged in'
+        403:
+          description: 'User is not admin and is not updating own profile'
+    delete:
+      summary: 'Delete profile'
+      operationId: 'deleteProfile'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of profile to delete"
+          required: true
+          schema:
+            type: integer
+      responses:
+        201:
+          description: 'profile deleted'
+        401:
+          description: 'not logged in'
+        403:
+          description: 'User is not admin and is not deleting own profile'
+
+components:
+  schemas:
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+    JwtResponse:
+      type: object
+      properties:
+        accessToken:
+          type: integer
+        type:
+          type: string
+        email:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [ROLE_USER, ROLE_CONTRIBUTOR, ROLE_ADMIN]
+    PasswordChangeRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          maxLength: 120
+      required:
+        - password
+    SignupRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          maxLength: 50
+        firstname:
+          type: string
+          maxLength: 30
+        lastname:
+          type: string
+          maxLength: 30
+        password:
+          type: string
+          maxLength: 120
+      required:
+        - email
+        - firstname
+        - lastname
+        - password
+    UserPatchRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          maxLength: 50
+        firstname:
+          type: string
+          maxLength: 30
+        lastname:
+          type: string
+          maxLength: 30
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [ROLE_USER, ROLE_CONTRIBUTOR, ROLE_ADMIN]
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          maxLength: 50
+        firstname:
+          type: string
+          maxLength: 30
+        lastname:
+          type: string
+          maxLength: 30
+        profile:
+          type: string
+          nullable: true
+          description: reference to the profile belonging to this user or null
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              role:
+                type: string
+                enum: [ ROLE_USER, ROLE_CONTRIBUTOR, ROLE_ADMIN ]
+    Address:
+      type: object
+      properties:
+        addressLine1:
+          type: string
+          maxLength: 100
+        addressLine2:
+          type: string
+          maxLength: 100
+        addressLine3:
+          type: string
+          maxLength: 100
+        postalCode:
+          type: string
+          maxLength: 20
+        city:
+          type: string
+          maxLength: 30
+        country:
+          type: string
+          maxLength: 40
+      required:
+        - addressLine1
+        - postalCode
+        - city
+        - country
+
+    AddressPatchRequest:
+      type: object
+      properties:
+        addressLine1:
+          type: string
+          maxLength: 100
+        addressLine2:
+          type: string
+          maxLength: 100
+        addressLine3:
+          type: string
+          maxLength: 100
+        postalCode:
+          type: string
+          maxLength: 20
+        city:
+          type: string
+          maxLength: 30
+        country:
+          type: string
+          maxLength: 40
+
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+        user:
+          type: string
+          description: reference to the user this profile belongs to
+        address:
+          $ref: '#/components/schemas/Address'
+        weight:
+          type: integer
+        height:
+          type: integer
+
+    ProfileCreateRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+          description: The id of the user this profile should belong to
+        address:
+          $ref: '#/components/schemas/Address'
+        weight:
+          type: integer
+        height:
+          type: integer
+    ProfilePatchRequest:
+      type: object
+      properties:
+        user:
+          type: string
+          description: reference to the user this profile belongs to
+        address:
+          $ref: '#/components/schemas/AddressPatchRequest'
+        weight:
+          type: integer
+        height:
+          type: integer
