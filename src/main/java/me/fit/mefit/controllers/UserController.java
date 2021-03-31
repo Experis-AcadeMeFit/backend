@@ -1,5 +1,8 @@
 package me.fit.mefit.controllers;
 
+import me.fit.mefit.keysecurity.services.AuthAdapter;
+import me.fit.mefit.keysecurity.services.KeycloakUserService;
+import me.fit.mefit.keysecurity.services.exceptions.HTTPUnauthorizedException;
 import me.fit.mefit.models.Role;
 import me.fit.mefit.models.RoleEnum;
 import me.fit.mefit.models.User;
@@ -14,6 +17,8 @@ import me.fit.mefit.utils.ApiPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.ws.rs.WebApplicationException;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
@@ -38,20 +44,15 @@ import java.util.Set;
 public class UserController {
     Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+    @Autowired AuthAdapter authAdapter;
+    @Autowired KeycloakUserService userService;
+    @Autowired UserRepository userRepository;
+    @Autowired RoleRepository roleRepository;
 
-    @Autowired
-    UserRepository userRepository;
+    @Autowired @Lazy PasswordEncoder encoder;
+    @Autowired @Lazy JwtUtils jwtUtils;
 
-    @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    PasswordEncoder encoder;
-
-    @Autowired
-    JwtUtils jwtUtils;
+    @Value("${mefit.app.usingKeycloak}") boolean usingKeycloak;
 
     /*
         Returns 303 See Other with the location header set to the URL of the currently
@@ -65,9 +66,7 @@ public class UserController {
     @GetMapping()
     public ResponseEntity<?> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails principal = (UserDetails) authentication.getPrincipal();
-
-        User user = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        User user = authAdapter.getUser(authentication.getPrincipal());
 
         return ResponseEntity
                 .status(HttpStatus.SEE_OTHER)
@@ -84,7 +83,10 @@ public class UserController {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken"));
         }
+        //Create user in keycloak
+        userService.createUser(signupRequest);
 
+        //Create user locally
         User user = new User(
                 encoder.encode(signupRequest.getPassword()),
                 signupRequest.getFirstname(),
@@ -112,9 +114,8 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails principal = (UserDetails) authentication.getPrincipal();
 
-        User user = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        User user = authAdapter.getUser(authentication.getPrincipal());
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
         if (user.getId() == id || user.getRoles().contains(adminRole)) {
@@ -140,13 +141,17 @@ public class UserController {
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable long id, @Valid @RequestBody UserPatchRequest userPatchRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails principal = (UserDetails) authentication.getPrincipal();
+        //UserDetails principal = (UserDetails) authentication.getPrincipal();
 
-        User loggedInUser = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        User loggedInUser = authAdapter.getUser(authentication.getPrincipal());
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
         if (loggedInUser.getId() == id || loggedInUser.getRoles().contains(adminRole)) {
             User user = userRepository.findById(id).orElseThrow();
+
+            if (usingKeycloak) {
+                userService.updateUser(user.getKeycloakId(), userPatchRequest);
+            }
 
             if (userPatchRequest.getEmail() != null) {
                 if (userRepository.existsByEmail(userPatchRequest.getEmail())) {
@@ -166,6 +171,12 @@ public class UserController {
             if (userPatchRequest.getRoles() != null) {
                 // BACKDOOR FOR USER WITH ID = 1 !!
                 if (loggedInUser.getRoles().contains(adminRole) || loggedInUser.getId() == 1) {
+                    userService.updateRoles(user.getKeycloakId(), userPatchRequest.getRoles());
+
+                    // Reset the roles of the user
+                    user.setRoles(new HashSet<>());
+
+                    // Add the roles in the patch request
                     for (RoleEnum roleToAdd: userPatchRequest.getRoles()) {
                         Role roleObject = roleRepository.findByRole(roleToAdd).orElseThrow();
                         user.getRoles().add(roleObject);
@@ -196,13 +207,14 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails principal = (UserDetails) authentication.getPrincipal();
 
-        User loggedInUser = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        User loggedInUser = authAdapter.getUser(authentication.getPrincipal()); //userRepository.findByEmail(principal.getUsername()).orElseThrow();
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
         if (loggedInUser.getId() == id || loggedInUser.getRoles().contains(adminRole)) {
             User changeUser = userRepository.findById(id).orElseThrow();
+
+            userService.deleteUser(changeUser);
 
             changeUser.setDeleted();
             userRepository.save(changeUser);
@@ -227,16 +239,19 @@ public class UserController {
     @PostMapping("/{id}/update_password")
     public ResponseEntity<String> updatePassword(@PathVariable long id , @RequestBody PasswordChangeRequest passwordChangeRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails principal = (UserDetails) authentication.getPrincipal();
 
-        User loggedInUser = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        User loggedInUser = authAdapter.getUser(authentication.getPrincipal());
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
         if (loggedInUser.getId() == id || loggedInUser.getRoles().contains(adminRole)) {
             User changeUser = userRepository.findById(id).orElseThrow();
 
-            changeUser.setPassword(encoder.encode(passwordChangeRequest.getPassword()));
-            userRepository.save(changeUser);
+            if (usingKeycloak) {
+                userService.updatePassword(changeUser.getKeycloakId(), passwordChangeRequest.getPassword());
+            } else {
+                changeUser.setPassword(encoder.encode(passwordChangeRequest.getPassword()));
+                userRepository.save(changeUser);
+            }
 
             return ResponseEntity
                     .noContent()
@@ -251,14 +266,18 @@ public class UserController {
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus( HttpStatus.NOT_FOUND )
     public void NotFoundHandler(HttpServletRequest req, Exception ex) {
-        logger.info("Invalid request received: " + req.getRequestURI());
-        logger.info("Invalid request received: " + req.getMethod());
+        logger.info("Not found: " + req.getRequestURI());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus( HttpStatus.BAD_REQUEST )
     public void InvalidArgumentHandler(HttpServletRequest req, Exception ex) {
         logger.info("Invalid request received: " + req.getRequestURI());
-        logger.info("Invalid request received: " + req.getMethod());
+    }
+
+    @ExceptionHandler(WebApplicationException.class)
+    public ResponseEntity<?> keycloakClientHandler(HttpServletRequest req, Exception ex) {
+        //TODO
+        return ResponseEntity.badRequest().build();
     }
 }

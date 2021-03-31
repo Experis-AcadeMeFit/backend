@@ -12,9 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @SpringBootApplication
 public class MefitApplication implements WebMvcConfigurer {
 
-	@Autowired
-	@Lazy
-	private RateLimitInterceptor interceptor;
+	@Autowired @Lazy private RateLimitInterceptor interceptor;
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {

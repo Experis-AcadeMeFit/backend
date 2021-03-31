@@ -1,9 +1,6 @@
 package me.fit.mefit.controllers;
 
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Bucket4j;
-import io.github.bucket4j.Refill;
+import me.fit.mefit.keysecurity.services.LoginService;
 import me.fit.mefit.payload.request.LoginRequest;
 import me.fit.mefit.payload.response.JwtResponse;
 import me.fit.mefit.repositories.RoleRepository;
@@ -13,48 +10,38 @@ import me.fit.mefit.utils.ApiPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+
 
 @RequestMapping(ApiPaths.LOGIN_PATH)
 @RestController
 public class LoginController {
-
-
     private Logger logger = LoggerFactory.getLogger(LoginController.class);
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+    @Autowired UserRepository userRepository;
+    @Autowired RoleRepository roleRepository;
+    @Autowired LoginService loginService;
 
-    @Autowired
-    UserRepository userRepository;
+    // These three are only used when we use local auth
+    @Autowired @Lazy AuthenticationManager authenticationManager;
+    @Autowired @Lazy PasswordEncoder encoder;
+    @Autowired @Lazy JwtUtils jwtUtils;
 
-    @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    PasswordEncoder encoder;
-
-    @Autowired
-    JwtUtils jwtUtils;
+    @Value("${mefit.app.usingKeycloak}") boolean usingKeycloak;
 
        /*
         Authenticates a user. Accepts appropriate parameters in the request body as application/json.
@@ -68,31 +55,39 @@ public class LoginController {
     */
     @PostMapping()
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        if (usingKeycloak) {
+            return ResponseEntity.ok( loginService.performLogin(loginRequest) );
+        } else {
+            Authentication auth = authenticationManager
+            .authenticate( new UsernamePasswordAuthenticationToken( loginRequest.getEmail(), loginRequest.getPassword() ) );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+            SecurityContextHolder
+                    .getContext()
+                    .setAuthentication(auth);
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+            String jwt = jwtUtils.generateJwtToken(auth);
 
-        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), roles));
+            return ResponseEntity.ok( new JwtResponse(jwt, "Bearer") );
+        }
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus( HttpStatus.BAD_REQUEST )
-    public void InvalidArgumentHandler(HttpServletRequest req, Exception ex) {
-        logger.info("Invalid request received: " + req.getRequestURI());
-        logger.info("Invalid request received: " + req.getMethod());
+    public void invalidArgumentHandler(HttpServletRequest req, Exception ex) {
+        logger.info("Invalid request received: {}", req.getRequestURI());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus( HttpStatus.UNAUTHORIZED )
-    public void UnauthorizedHandler(HttpServletRequest req, Exception ex) {
-        logger.info("Unauthorized request received: " + req.getRequestURI());
-        logger.info("Unauthorized request received: " + req.getMethod());
+    public void unauthorizedHandler(HttpServletRequest req, Exception ex) {
+        logger.info("Unauthorized request received: {}", req.getRequestURI());
     }
+
+    @ExceptionHandler(WebClientRequestException.class)
+    @ResponseStatus( HttpStatus.INTERNAL_SERVER_ERROR )
+    public void webClientExceptionHandler(HttpServletRequest req, WebClientRequestException ex) {
+        logger.info("WebClient threw exception: {}", ex.getLocalizedMessage());
+    }
+
+
 }
