@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping(ApiPaths.USER_PATH)
 @RestController
 public class UserController {

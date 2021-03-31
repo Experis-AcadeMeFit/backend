@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping(ApiPaths.WORKOUT_PATH)
 @RestController
 public class WorkoutController {

@@ -24,6 +24,7 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.NoSuchElementException;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping(ApiPaths.PROFILE_PATH)
 @RestController
 public class ProfileController {

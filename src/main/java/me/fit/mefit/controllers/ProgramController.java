@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping(ApiPaths.PROGRAM_PATH)
 @RestController
 public class ProgramController {

@@ -26,7 +26,7 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping(ApiPaths.LOGIN_PATH)
 @RestController
 public class LoginController {
