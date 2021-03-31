@@ -1,5 +1,6 @@
 package me.fit.mefit.controllers;
 
+import me.fit.mefit.keysecurity.services.AuthAdapter;
 import me.fit.mefit.models.*;
 import me.fit.mefit.payload.request.ProfileCreateRequest;
 import me.fit.mefit.payload.request.ProfilePatchRequest;
@@ -24,19 +25,16 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.NoSuchElementException;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping(ApiPaths.PROFILE_PATH)
 @RestController
 public class ProfileController {
     Logger logger = LoggerFactory.getLogger(ProfileController.class);
 
-    @Autowired
-    private ProfileRepository profileRepository;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    RoleRepository roleRepository;
+    @Autowired AuthAdapter authAdapter;
+    @Autowired ProfileRepository profileRepository;
+    @Autowired UserRepository userRepository;
+    @Autowired RoleRepository roleRepository;
 
     /*
         Return the profile of the current user. Not in specs. Move if we need "get all profiles"
@@ -46,9 +44,7 @@ public class ProfileController {
     @GetMapping()
     public ResponseEntity<?> getCurrentProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails principal = (UserDetails) authentication.getPrincipal();
-
-        User user = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        User user = authAdapter.getUser(authentication.getPrincipal());
 
         return ResponseEntity
                 .status(HttpStatus.SEE_OTHER)
@@ -63,9 +59,7 @@ public class ProfileController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getProfile(@PathVariable long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails principal = (UserDetails) authentication.getPrincipal();
-
-        User loggedInUser = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        User loggedInUser = authAdapter.getUser(authentication.getPrincipal());
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
         if (id == loggedInUser.getId() || loggedInUser.getRoles().contains(adminRole)) {
@@ -83,9 +77,7 @@ public class ProfileController {
     @PostMapping()
     public ResponseEntity<?> createProfile(@Valid @RequestBody ProfileCreateRequest profileCreateRequest ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails principal = (UserDetails) authentication.getPrincipal();
-
-        User loggedInUser = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        User loggedInUser = authAdapter.getUser(authentication.getPrincipal());
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
         if (profileCreateRequest.getUserId() == loggedInUser.getId() || loggedInUser.getRoles().contains(adminRole)) {
@@ -117,9 +109,7 @@ public class ProfileController {
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateProfile(@PathVariable long id, @Valid @RequestBody ProfilePatchRequest profilePatchRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails principal = (UserDetails) authentication.getPrincipal();
-
-        User loggedInUser = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        User loggedInUser = authAdapter.getUser(authentication.getPrincipal());
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
         if (loggedInUser.getId() == id || loggedInUser.getRoles().contains(adminRole)) {
@@ -181,9 +171,7 @@ public class ProfileController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProfile(@PathVariable long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails principal = (UserDetails) authentication.getPrincipal();
-
-        User loggedInUser = userRepository.findByEmail(principal.getUsername()).orElseThrow();
+        User loggedInUser = authAdapter.getUser(authentication.getPrincipal());
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
         if (loggedInUser.getId() == id || loggedInUser.getRoles().contains(adminRole)) {
