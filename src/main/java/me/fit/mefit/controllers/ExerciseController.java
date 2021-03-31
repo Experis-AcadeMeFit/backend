@@ -14,6 +14,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -65,10 +66,10 @@ public class ExerciseController {
      */
 
     @PostMapping()
-    public ResponseEntity<Exercise> createExercise(@RequestBody Exercise exercise) {
+    public ResponseEntity<URI> createExercise(@RequestBody Exercise exercise) {
         Exercise returnExercise = exerciseRepository.save(exercise);
         HttpStatus status = HttpStatus.CREATED;
-        return new ResponseEntity<>(returnExercise, status);
+        return new ResponseEntity<>(URI.create(ApiPaths.EXERCISE_PATH +"/"+ returnExercise.getId()), status);
     }
 
     /*
