@@ -45,6 +45,8 @@ public class User {
     @JsonIgnore
     private int deleted = 0;
 
+    private String keycloakId;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
@@ -68,6 +70,14 @@ public class User {
         if (profile != null)
             return ApiPaths.PROFILE_PATH + "/" + profile.getId();
         return null;
+    }
+
+    public String getKeycloakId() {
+        return keycloakId;
+    }
+
+    public void setKeycloakId(String keycloakId) {
+        this.keycloakId = keycloakId;
     }
 
     public int getDeleted() {
