@@ -5,6 +5,7 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -21,6 +22,10 @@ public class Workout {
 
     @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL)
     private Set<WorkoutSet> workoutSets = new HashSet<>();
+
+    @JsonIgnore
+    @ManyToMany
+    List<Program> program;
 
     @JsonIgnore
     @Column(name = "DELETED")
@@ -57,6 +62,14 @@ public class Workout {
 
     public void setExerciseSets(Set<WorkoutSet> workoutSets) {
         this.workoutSets = workoutSets;
+    }
+
+    public List<Program> getProgram() {
+        return program;
+    }
+
+    public void setProgram(List<Program> program) {
+        this.program = program;
     }
 
     public void setDeleted() {
