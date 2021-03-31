@@ -24,7 +24,15 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
+      
+      - name: Setup Java JDK
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: '15.0.2'
+      - name: Build with Gradle
+        run: ./gradlew build
+      
       - name: Heroku Docker Container Deploy
         # You may pin to the exact commit or the version.
         # uses: lucassarcanjo/heroku-deploy@1db4c62f6032efe526c12734f18d36669218e5af
