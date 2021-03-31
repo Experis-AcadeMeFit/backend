@@ -149,7 +149,7 @@ public class WorkoutController {
      */
 
     @PostMapping("/{id}/sets")
-    public ResponseEntity<Workout> createSet(@PathVariable long id, @RequestBody SetRequest setRequest){
+    public ResponseEntity<Workout> addSet(@PathVariable long id, @RequestBody SetRequest setRequest){
         if (!workoutRepository.existsById(id)){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
