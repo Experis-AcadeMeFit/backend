@@ -6,6 +6,7 @@ public class ApiPaths {
     public static final String LOGIN_PATH = BASE_PATH + "/login";
     public static final String EXERCISE_PATH = BASE_PATH + "/exercises";
     public static final String WORKOUT_PATH = BASE_PATH + "/workouts";
+    public static final String PROGRAM_PATH = BASE_PATH + "/programs";
     public static final String GOAL_PATH = BASE_PATH + "/goals";
     public static final String PROFILE_PATH = BASE_PATH + "/profiles";
     public static final String USER_PATH = BASE_PATH + "/users";
