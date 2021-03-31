@@ -17,6 +17,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.*;
 
 @RequestMapping(ApiPaths.WORKOUT_PATH)
@@ -67,7 +68,7 @@ public class WorkoutController {
     */
 
     @PostMapping()
-    public ResponseEntity<Workout> createWorkout(@RequestBody WorkoutRequest workoutRequest) {
+    public ResponseEntity<URI> createWorkout(@RequestBody WorkoutRequest workoutRequest) {
         Workout returnWorkout = new Workout();
         returnWorkout.setName(workoutRequest.getName());
         returnWorkout.setType(workoutRequest.getType());
@@ -83,7 +84,7 @@ public class WorkoutController {
         }
         workoutRepository.save(returnWorkout);
         HttpStatus status = HttpStatus.CREATED;
-        return new ResponseEntity<>(returnWorkout, status);
+        return new ResponseEntity<>(URI.create(ApiPaths.WORKOUT_PATH +"/"+ returnWorkout.getId()), status);
     }
 
     /*
