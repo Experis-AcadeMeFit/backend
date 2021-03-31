@@ -35,23 +35,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew bootJar
       
-      - name: Heroku Docker Container Deploy
-        # You may pin to the exact commit or the version.
-        # uses: lucassarcanjo/heroku-deploy@1db4c62f6032efe526c12734f18d36669218e5af
-        uses: lucassarcanjo/heroku-deploy@2.1.17
+      - name: Build, Push and Deploy to Heroku #set the whatever name you want to this step
+        id: heroku
+        uses: jctaveras/heroku-deploy@v1.0.0
         with:
-          # Email Linked to your Heroku Account
           email: ${{ secrets.EMAIL }}
-          # Heroku Dyno Formation
-          formation: web # optional, default is web
-          # Your Heroku API Key
           api_key: ${{ secrets.API_KEY }}
-          # Your Heroku App Name
           app_name: expwefit
-          # Dokerfile path
           dockerfile_path: .
-          # Optional build parameters
-          # options: # optional
 
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
