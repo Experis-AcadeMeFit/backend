@@ -70,7 +70,9 @@ public class ExerciseController {
     public ResponseEntity<URI> createExercise(@RequestBody Exercise exercise) {
         Exercise returnExercise = exerciseRepository.save(exercise);
         HttpStatus status = HttpStatus.CREATED;
-        return new ResponseEntity<>(URI.create(ApiPaths.EXERCISE_PATH +"/"+ returnExercise.getId()), status);
+        return ResponseEntity
+                .created(URI.create(ApiPaths.EXERCISE_PATH + "/" + returnExercise.getId()))
+                .build();
     }
 
     /*
