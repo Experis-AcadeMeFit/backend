@@ -5,6 +5,7 @@ import me.fit.mefit.utils.ApiPaths;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Entity
 @Table(name = "profile")
@@ -17,7 +18,8 @@ public class Profile {
     @OneToOne(mappedBy = "profile")
     private User user;
 
-    // private Goal goal;
+    @OneToMany(mappedBy = "profile")
+    private List<Goal> goals;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id", referencedColumnName = "id")
@@ -27,7 +29,7 @@ public class Profile {
     //Keep?
     // private Program program;
     // private Workout workout;
-    // private Set set;
+    // private WorkoutSet set;
 
     private int weight;
     private int height;
