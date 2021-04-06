@@ -1,5 +1,9 @@
 package me.fit.mefit.controllers;
 
+import me.fit.mefit.keysecurity.services.AuthAdapter;
+import me.fit.mefit.models.Goal;
+import me.fit.mefit.models.*;
+import me.fit.mefit.payload.request.GoalRequest;
 import me.fit.mefit.repositories.GoalRepository;
 import me.fit.mefit.utils.ApiPaths;
 import org.slf4j.Logger;
@@ -7,7 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping(ApiPaths.GOAL_PATH)
@@ -18,6 +26,9 @@ public class GoalController {
 
     @Autowired
     private GoalRepository goalRepository;
+
+    @Autowired
+    AuthAdapter authAdapter;
 
 
     /*
@@ -35,8 +46,20 @@ public class GoalController {
     */
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PostMapping()
-    public ResponseEntity<String> createGoal(/* @RequestBody Type type */) {
-        return ResponseEntity.ok("Not Implemented");
+    public ResponseEntity<String> createGoal( @RequestBody GoalRequest goalRequest ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = authAdapter.getUser(authentication.getPrincipal());
+        Goal returnGoal = new Goal();
+
+        returnGoal.setStartDate(goalRequest.getStartDate());
+        returnGoal.setEndDate(goalRequest.getEndDate());
+        returnGoal.setProfile(user.getProfile());
+
+        goalRepository.save(returnGoal);
+
+        return ResponseEntity
+                .created(URI.create(ApiPaths.GOAL_PATH + "/" + returnGoal.getId()))
+                .build();
     }
 
     /*
