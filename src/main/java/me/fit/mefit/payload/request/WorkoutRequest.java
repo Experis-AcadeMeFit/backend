@@ -14,7 +14,7 @@ public class WorkoutRequest {
     @Size(max = 40)
     private String type;
 
-    private List<SetRequest> sets;
+    private List<SetRequest> exerciseSets;
 
     public String getName() {
         return name;
@@ -32,12 +32,12 @@ public class WorkoutRequest {
         this.type = type;
     }
 
-    public List<SetRequest> getSets() {
-        return sets;
+    public List<SetRequest> getExerciseSets() {
+        return exerciseSets;
     }
 
-    public void setSets(List<SetRequest> sets) {
-        this.sets = sets;
+    public void setExerciseSets(List<SetRequest> exerciseSets) {
+        this.exerciseSets = exerciseSets;
     }
 
 }
