@@ -75,7 +75,7 @@ public class WorkoutController {
         returnWorkout.setType(workoutRequest.getType());
         returnWorkout = workoutRepository.save(returnWorkout);
 
-        for (SetRequest set : workoutRequest.getSets()) {
+        for (SetRequest set : workoutRequest.getExerciseSets()) {
             WorkoutSet workoutSet = new WorkoutSet();
             workoutSet.setWorkout(returnWorkout);
             workoutSet.setExercise(exerciseRepository.getOne(set.getExerciseId()));
@@ -84,8 +84,8 @@ public class WorkoutController {
             returnWorkout.getExerciseSets().add(workoutSet);
         }
         workoutRepository.save(returnWorkout);
-        HttpStatus status = HttpStatus.CREATED;
-        return new ResponseEntity<>(URI.create(ApiPaths.WORKOUT_PATH +"/"+ returnWorkout.getId()), status);
+        return ResponseEntity.created(URI.create(ApiPaths.WORKOUT_PATH + "/" + returnWorkout.getId()))
+                .build();
     }
 
     /*
