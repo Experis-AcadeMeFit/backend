@@ -1,9 +1,12 @@
 package me.fit.mefit.controllers;
 
+import me.fit.mefit.repositories.GoalRepository;
 import me.fit.mefit.utils.ApiPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -12,10 +15,10 @@ import org.springframework.web.bind.annotation.*;
 public class GoalController {
     Logger logger = LoggerFactory.getLogger(GoalController.class);
 
-    /*
-    @AutoWired
+
+    @Autowired
     private GoalRepository goalRepository;
-    */
+
 
     /*
         Returns detail about current state of the users current goal.
@@ -30,7 +33,7 @@ public class GoalController {
     /*
         Creates a new goal. Accepts appropriate parameters in the request body as application/json.
     */
-
+    @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<String> createGoal(/* @RequestBody Type type */) {
         return ResponseEntity.ok("Not Implemented");
