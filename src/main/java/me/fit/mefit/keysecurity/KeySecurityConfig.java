@@ -40,7 +40,7 @@ public class KeySecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         if (usingKeycloak) {
             http.cors()
-                    .and()
+                    .disable()
                     .csrf().disable()
                     .sessionManagement().sessionCreationPolicy( SessionCreationPolicy.STATELESS )
                     .and()
