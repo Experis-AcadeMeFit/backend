@@ -2,6 +2,7 @@ package me.fit.mefit.controllers;
 
 import me.fit.mefit.keysecurity.services.LoginService;
 import me.fit.mefit.payload.request.LoginRequest;
+import me.fit.mefit.payload.request.RefreshRequest;
 import me.fit.mefit.payload.response.JwtResponse;
 import me.fit.mefit.repositories.RoleRepository;
 import me.fit.mefit.repositories.UserRepository;
@@ -27,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-@RequestMapping(ApiPaths.LOGIN_PATH)
 @RestController
 public class LoginController {
     private Logger logger = LoggerFactory.getLogger(LoginController.class);
@@ -53,7 +53,7 @@ public class LoginController {
         for rate limiting.
 
     */
-    @PostMapping()
+    @PostMapping(ApiPaths.LOGIN_PATH)
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
         if (usingKeycloak) {
             return ResponseEntity.ok( loginService.performLogin(loginRequest) );
@@ -69,6 +69,15 @@ public class LoginController {
 
             return ResponseEntity.ok( new JwtResponse(jwt, "Bearer") );
         }
+    }
+    
+    @PostMapping(ApiPaths.REFRESH_PATH)
+    public ResponseEntity<?> refresh(@Valid @RequestBody RefreshRequest refreshRequest) {
+        if (usingKeycloak) {
+            return ResponseEntity.ok( loginService.performRefresh(refreshRequest) );
+        }
+
+        return ResponseEntity.badRequest().body("Not using keycloak");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
