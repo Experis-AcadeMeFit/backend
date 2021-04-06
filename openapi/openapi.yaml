@@ -7,20 +7,19 @@ servers:
   - url: 'http://localhost:{port}/{basePath}/v{version}'
     description: 'Dev'
     variables:
-      protocol:
-        description: 'remember to set port to 443 for https'
-        default: 'http'
-        enum:
-          - 'http'
-          - 'https'
       port:
         default: '8080'
       version:
         default: '1'
       basePath:
         default: 'api'
-  - url: 'https://prod-goes-here.com/api/v1'
+  - url: 'https://expwefitkey.herokuapp.com/{basePath}/v{version}'
     description: 'Prod'
+    variables:
+      version:
+        default: '1'
+      basePath:
+        default: 'api'
 paths:
   /login:
     post:
@@ -42,6 +41,30 @@ paths:
                 $ref: '#/components/schemas/JwtResponse'
         400:
           description: 'Bad Request'
+        401:
+          description: 'Unauthorized'
+        429:
+          description: 'Too Many Requests'
+  /refresh:
+    post:
+      summary: 'POST api/v1/login'
+      operationId: "login"
+      requestBody:
+        description: 'refreshRequest'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        200:
+          description: "OK"
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/JwtResponse'
+        400:
+          description: 'Refresh Token is expired'
         401:
           description: 'Unauthorized'
         429:
@@ -286,20 +309,30 @@ components:
       required:
         - email
         - password
+    RefreshRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+      required:
+        - refresh_token
     JwtResponse:
       type: object
       properties:
-        accessToken:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+        session_state:
+          type: string
+        expires_in:
           type: integer
-        type:
-          type: string
-        email:
-          type: string
-        roles:
-          type: array
-          items:
-            type: string
-            enum: [ROLE_USER, ROLE_CONTRIBUTOR, ROLE_ADMIN]
+        refresh_expires_in:
+          type: integer
+        not_before_policy:
+          type: integer
     PasswordChangeRequest:
       type: object
       properties:
