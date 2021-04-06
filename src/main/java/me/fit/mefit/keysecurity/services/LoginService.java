@@ -1,6 +1,7 @@
 package me.fit.mefit.keysecurity.services;
 
 import me.fit.mefit.payload.request.LoginRequest;
+import me.fit.mefit.payload.request.RefreshRequest;
 import me.fit.mefit.payload.response.JwtResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,30 @@ public class LoginService {
                 .onStatus(HttpStatus::is4xxClientError, clientResponse -> {
                     if (clientResponse.statusCode() == HttpStatus.UNAUTHORIZED) {
                         throw new BadCredentialsException("Keycloak says wrong username or password");
+                    }
+                    throw new RuntimeException();
+                })
+                .bodyToMono(JwtResponse.class)
+                .block();
+    }
+
+    public JwtResponse performRefresh(RefreshRequest refreshRequest) {
+        logger.info("Refreshing token");
+
+        WebClient client = WebClient.builder()
+                .baseUrl(address)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .build();
+
+        return client.post()
+                .uri(String.format(LOGIN_PATH, realm))
+                .body(BodyInserters.fromFormData("client_id", clientId)
+                .with("grant_type", "refresh_token")
+                .with("refresh_token", refreshRequest.getRefreshToken()))
+                .retrieve()
+                .onStatus(HttpStatus::is4xxClientError, clientResponse -> {
+                    if (clientResponse.statusCode() == HttpStatus.BAD_REQUEST) {
+                        throw new BadCredentialsException("Refresh Token expired");
                     }
                     throw new RuntimeException();
                 })
