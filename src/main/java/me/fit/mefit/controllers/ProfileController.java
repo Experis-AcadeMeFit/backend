@@ -62,7 +62,7 @@ public class ProfileController {
         User loggedInUser = authAdapter.getUser(authentication.getPrincipal());
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
-        if (id == loggedInUser.getId() || loggedInUser.getRoles().contains(adminRole)) {
+        if (id == loggedInUser.getProfile().getId() || loggedInUser.getRoles().contains(adminRole)) {
             Profile fetchProfile = profileRepository.findById(id).orElseThrow();
             return ResponseEntity.ok(fetchProfile);
         }
@@ -112,7 +112,7 @@ public class ProfileController {
         User loggedInUser = authAdapter.getUser(authentication.getPrincipal());
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
-        if (loggedInUser.getId() == id || loggedInUser.getRoles().contains(adminRole)) {
+        if (loggedInUser.getProfile().getId() == id || loggedInUser.getRoles().contains(adminRole)) {
             User patchUser = userRepository.findById(id).orElseThrow();
             Profile patchProfile = patchUser.getProfile();
 
@@ -174,7 +174,7 @@ public class ProfileController {
         User loggedInUser = authAdapter.getUser(authentication.getPrincipal());
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
-        if (loggedInUser.getId() == id || loggedInUser.getRoles().contains(adminRole)) {
+        if (loggedInUser.getProfile().getId() == id || loggedInUser.getRoles().contains(adminRole)) {
             User user = userRepository.findById(id).orElseThrow();
             user.setProfile(null);
             userRepository.save(user);
