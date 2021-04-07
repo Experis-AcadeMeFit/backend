@@ -44,7 +44,7 @@ public class KeycloakUserService {
                 .build();
     }
 
-    public void createUser(SignupRequest user) {
+    public String createUser(SignupRequest user) {
         if (usingKeycloak) {
             if (keycloak == null) {
                 createClient();
@@ -64,7 +64,10 @@ public class KeycloakUserService {
 
             RoleRepresentation userRole = keycloak.realm(realm).roles().get("USER").toRepresentation();
             keycloak.realm(realm).users().get(userId).roles().realmLevel().add(Collections.singletonList(userRole));
+
+            return userId;
         }
+        throw new RuntimeException("Not using keycloak");
     }
 
     public void updatePassword(String keycloakId, String password) {
