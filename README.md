@@ -3,6 +3,7 @@
 MeFit is a personal fitness goal app which allows users to set weekly workout goals. This repository
 contains the backend portion of the case. 
 
+The backend is written in Java using Spring. PostgreSQL is used to store data and Keycloak for authentication and authorization.
 
 ## Deployment
 A running instance can be found at https://expwefit.herokuapp.com and the documentation at <https://expwefit.herokuapp.com/>
