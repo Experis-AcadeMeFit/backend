@@ -31,6 +31,8 @@ public class ProgramController {
     @Autowired
     private WorkoutRepository workoutRepository;
 
+    //Returns the details of all programs
+
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @GetMapping()
     public ResponseEntity<List<Program>> getAllPrograms(){
@@ -38,7 +40,7 @@ public class ProgramController {
         HttpStatus status = HttpStatus.OK;
         return new ResponseEntity<>(programs, status);
     }
-
+    //Returns the details of a program
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<Program> getProgram(@PathVariable long id ){
@@ -54,7 +56,8 @@ public class ProgramController {
 
         return new ResponseEntity<>(program,status);
     }
-
+    //Creates a new program. Accepts  appropriate  parameters  in
+    // the  request  body  asapplication/json.Contributor only.
     @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<URI> addProgram(@RequestBody Program program){
@@ -63,7 +66,8 @@ public class ProgramController {
         status = HttpStatus.CREATED;
         return new ResponseEntity<>(URI.create(ApiPaths.PROGRAM_PATH +"/"+ program.getId()), status);
     }
-
+    //Executes a partial update of the program corresponding to the provided program id.
+    // Accepts appropriate parameters in the request body asapplication/json.Contributoronly.
     @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<Program> updateProgram(@PathVariable long id, @RequestBody Map<String, Object> fields) {
@@ -92,6 +96,8 @@ public class ProgramController {
         return new ResponseEntity<>(returnProgram, HttpStatus.NO_CONTENT);
     }
 
+    //Deletes a program
+    //Contributors only
     @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Program> deleteProgram(@PathVariable long id){
@@ -107,7 +113,9 @@ public class ProgramController {
         }
         return new ResponseEntity<>(status);
     }
-
+    //Adds a workout to a program
+    //Accepts  appropriate  parameters  in  the  request  body  asapplication/json
+    //Contributor only
     @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PostMapping("/{id}/workouts")
     public ResponseEntity<Program> addWorkout(@PathVariable long id, @RequestBody WorkoutId workoutId){
@@ -123,7 +131,9 @@ public class ProgramController {
 
         return new ResponseEntity<>(status);
     }
-
+    //removes a workout to a program
+    //Accepts  appropriate  parameters  in  the  request  body  asapplication/json
+    //Contributor only
     @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @DeleteMapping({"/{programId}/workouts"})
     public ResponseEntity<Program> removeWorkout(@PathVariable long programId, @RequestBody WorkoutId workoutId){
