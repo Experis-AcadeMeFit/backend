@@ -11,6 +11,7 @@ import java.util.Date;
 
 @Entity
 @Where(clause = "DELETED = 0")
+@Table( name = "goal_workout")
 public class GoalWorkout {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
