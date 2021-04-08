@@ -84,16 +84,31 @@ public class UserController {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken"));
         }
-        //Create user in keycloak
-        userService.createUser(signupRequest);
+        User user = null;
 
-        //Create user locally
-        User user = new User(
-                encoder.encode(signupRequest.getPassword()),
-                signupRequest.getFirstname(),
-                signupRequest.getLastname(),
-                signupRequest.getEmail()
-        );
+        if (usingKeycloak) {
+            //Create user in keycloak
+            String keycloakId = userService.createUser(signupRequest);
+
+            if (keycloakId != null) {
+                user = new User(
+                        "keycloakuser", //This password is never used since this is a keycloak user
+                        signupRequest.getFirstname(),
+                        signupRequest.getLastname(),
+                        signupRequest.getEmail()
+                );
+
+                user.setKeycloakId(keycloakId);
+            }
+        } else {
+            //Create user locally
+            user = new User(
+                    encoder.encode(signupRequest.getPassword()),
+                    signupRequest.getFirstname(),
+                    signupRequest.getLastname(),
+                    signupRequest.getEmail()
+            );
+        }
 
         Set<Role> roles = new HashSet<>();
         Role role = roleRepository
@@ -106,6 +121,7 @@ public class UserController {
         return ResponseEntity
                 .created(URI.create(ApiPaths.USER_PATH + "/" + user.getId()))
                 .build();
+
     }
 
     /*
