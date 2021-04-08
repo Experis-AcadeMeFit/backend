@@ -20,6 +20,9 @@ public class Goal {
     @JsonFormat(pattern="yyyy-MM-dd")
     private Date startDate;
 
+    //checks if the goal is completed
+    //returns true if all goalWorkouts are completed
+
     private boolean completed(){
         if(goalWorkouts.isEmpty()){
             return true;
