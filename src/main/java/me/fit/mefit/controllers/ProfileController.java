@@ -121,8 +121,8 @@ public class ProfileController {
         Role adminRole = roleRepository.findByRole(RoleEnum.ROLE_ADMIN).orElseThrow();
 
         if (loggedInUser.getRoles().contains(adminRole) || loggedInUser.getProfile() != null && loggedInUser.getProfile().getId() == id) {
-            User patchUser = userRepository.findById(id).orElseThrow();
-            Profile patchProfile = patchUser.getProfile();
+            Profile patchProfile = profileRepository.findById(id).orElseThrow();
+            User patchUser = patchProfile.getUser();
 
             if (profilePatchRequest.getHeight() != null) {
                 patchProfile.setHeight(profilePatchRequest.getHeight());
@@ -184,7 +184,9 @@ public class ProfileController {
 
 
         if (loggedInUser.getRoles().contains(adminRole) || loggedInUser.getProfile() != null && loggedInUser.getProfile().getId() == id) {
-            User user = userRepository.findById(id).orElseThrow();
+            Profile deleteProfile = profileRepository.findById(id).orElseThrow();
+            User user = deleteProfile.getUser();
+
             user.setProfile(null);
             userRepository.save(user);
 

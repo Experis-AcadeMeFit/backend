@@ -296,9 +296,392 @@ paths:
         403:
           description: 'User is not admin and is not deleting own profile'
 
+  /exercises:
+    get:
+      summary: 'Returns a list of currently available exercises arranged alphabetically by Target muscle group'
+      operationId: 'getAllExercises'
+      responses:
+        200:
+          description: 'List of all exercises'
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Exercise'
+    post:
+      summary: 'Creates a new exercise. Contributor only'
+      operationId: 'createExercise'
+      requestBody:
+        description: 'Exercise to create'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/Exercise'
+      responses:
+        201:
+          description: 'OK - Exercise Created'
+          headers:
+            Location:
+              description: 'Path to the created exercise'
+              schema:
+                type: string
+
+  /exercises/{id}:
+    get:
+      summary: 'Returns a single exercise corresponding to the provided id'
+      operationId: 'getExercise'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of exercise to fetch"
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: 'OK - The requested exercise'
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Exercise'
+    patch:
+      summary: 'Execute a partial update of the exercise - Contributor only'
+      operationId: 'updateExercise'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of exercise to patch"
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Fields to patch the exercise with'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/Exercise'
+      responses:
+        200:
+          description: 'Ok - Exercise updated'
+    delete:
+      summary: 'Delete an exercise. Contributor only'
+      operationId: 'DeleteExercise'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Id of exercise to delete'
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'OK - exercise deleted'
+        400:
+          description: 'Bad Request - exercise not found'
+  /programs:
+    get:
+      summary: 'get all programs'
+      operationId: 'getAllPrograms'
+      responses:
+        200:
+          description: 'OK - list of exercises'
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Program'
+    post:
+      summary: 'create a program'
+      operationId: 'addProgram'
+      responses:
+        201:
+          description: 'OK - program created'
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/CreateProgram'
+  /programs/{id}:
+    get:
+      summary: 'Returns a single program corresponding to the provided id'
+      operationId: 'getProgram'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of program to fetch"
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: 'OK - The requested program'
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Program'
+        400:
+          description: 'Not found'
+    patch:
+      summary: 'Execute a partial update of the program - Contributor only'
+      operationId: 'updateProgram'
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of program to patch"
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Fields to patch the program with'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/PatchProgram'
+      responses:
+        200:
+          description: 'Ok - Program updated'
+        400:
+          description: 'Not found'
+    delete:
+      summary: 'Delete a program. Contributor only'
+      operationId: 'deleteProgram'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Id of program to delete'
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'OK - program deleted'
+        400:
+          description: 'Bad Request - program not found'
+  /program/{id}/workouts:
+    post:
+      summary: 'add a workout to a program'
+      operationId: 'addWorkout'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Id of program to add workout to'
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'workout to add to program'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/WorkoutId'
+      responses:
+        204:
+          description: 'OK - workout added'
+        400:
+          description: 'Program or workout does not exist'
+    delete:
+      summary: 'remove a workout from a program'
+      operationId: 'removeWorkout'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Id of program to remove workout from'
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'workout to remove from program'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/WorkoutId'
+      responses:
+        204:
+          description: 'OK - workout removed'
+        400:
+          description: 'Program or workout does not exist'
+  /goals:
+    get:
+      summary: 'Returns detail about current state of the users current goals'
+      operationId: 'getGoals'
+      responses:
+        200:
+          description: 'OK - workout removed'
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Goal'
+    post:
+      summary: 'Creates a new goal'
+      operationId: 'createGoal'
+      requestBody:
+        description: 'Goal to create'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/Goal'
+      responses:
+        201:
+          description: 'Created - goal created'
+          headers:
+            Location:
+              description: 'Path to the created goal'
+              schema:
+                type: string
+  /goals/{id}:
+    get:
+      summary: 'Returns a specific goal'
+      operationId: 'getGoal'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Id of goal to fetch'
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: 'OK'
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Goal'
+        403:
+          description: 'User is not admin and goal does not belong to the user'
+    patch:
+      summary: 'Partial update of a goal'
+      operationId: 'updateGoal'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Id of goal to update'
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Field to patch the goal with'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/Goal'
+      responses:
+        200:
+          description: 'OK - workout removed'
+        400:
+          description: 'Bad request'
+        403:
+          description: 'Forbidden'
+        404:
+          description: 'Not found'
+    delete:
+      summary: 'delete a goal'
+      operationId: 'deleteGoal'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Id of goal to delete'
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'OK - goal removed'
+        403:
+          description: 'Goal does not belong to user'
+  /goals/{id}/goalworkouts:
+    post:
+      summary: 'add workout to goal'
+      operationId: 'addWorkout'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Id of goal to add workouts to'
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'list of workouts to add'
+        required: true
+        content:
+          'application/json':
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GoalWorkoutRequest'
+      responses:
+        204:
+          description: 'OK - workout removed'
+        400:
+          description: 'Bad request'
+        403:
+          description: 'Forbidden'
+  /goals/{id}/goalworkouts/{goalWorkoutId}:
+    patch:
+      summary: 'update a workout in a goal'
+      operationId: 'addWorkout'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Id of goal'
+          required: true
+          schema:
+            type: integer
+        - name: 'goalWorkoutId'
+          in: 'path'
+          description: 'Id of goal workout'
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'fields to update'
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/GoalWorkoutPatch'
+      responses:
+        204:
+          description: 'OK - updated'
+        400:
+          description: 'Bad request'
+        403:
+          description: 'Forbidden'
+    delete:
+      summary: 'remove a workout from a goal'
+      operationId: 'addWorkout'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Id of goal'
+          required: true
+          schema:
+            type: integer
+        - name: 'goalWorkoutId'
+          in: 'path'
+          description: 'Id of goal workout'
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'OK - workout removed'
+        400:
+          description: 'Bad Request'
+        403:
+          description: 'Forbidden'
+
 components:
   schemas:
-
     LoginRequest:
       type: object
       properties:
@@ -485,12 +868,162 @@ components:
     ProfilePatchRequest:
       type: object
       properties:
-        user:
-          type: string
-          description: reference to the user this profile belongs to
         address:
           $ref: '#/components/schemas/AddressPatchRequest'
         weight:
           type: integer
         height:
+          type: integer
+    Exercise:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        targetMuscleGroup:
+          type: string
+        image:
+          type: string
+        videoUrl:
+          type: string
+    Program:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        workouts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Workout'
+    CreateProgram:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        workouts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Workout'
+    PatchProgram:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+    Workout:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+        workoutSets:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkoutSet'
+    WorkoutRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 40
+        type:
+          type: string
+          maxLength: 40
+        exerciseSets:
+          type: array
+          items:
+            $ref: '#/components/schemas/SetRequest'
+    SetRequest:
+      type: object
+      properties:
+        exerciseRepetitions:
+          type: integer
+        sets:
+          type: integer
+        exerciseId:
+          type: integer
+    WorkoutSet:
+      type: object
+      properties:
+        id:
+          type: integer
+        exerciseRepetitions:
+          type: integer
+        sets:
+          type: integer
+        exercise:
+          type: string
+          description: 'Path to exercise'
+    WorkoutId:
+      type: object
+      properties:
+        id:
+         type: integer
+    Goal:
+      type: object
+      properties:
+        id:
+          type: integer
+        startDate:
+          type: string
+          description: 'yyyy-MM-dd'
+        endDate:
+          type: string
+          description: 'yyyy-MM-dd'
+        completed:
+          type: boolean
+        goalWorkouts:
+          type: array
+          items:
+            $ref: '#/components/schemas/GoalWorkout'
+    GoalPatch:
+      type: object
+      properties:
+        id:
+          type: integer
+        startDate:
+          type: string
+          description: 'yyyy-MM-dd'
+        endDate:
+          type: string
+          description: 'yyyy-MM-dd'
+    GoalWorkout:
+      type: object
+      properties:
+        id:
+          type: integer
+        endDate:
+          type: string
+          description: 'yyyy-MM-dd'
+        workout:
+          type: string
+          description: 'path to workout'
+        completed:
+          type: boolean
+    GoalWorkoutPatch:
+      type: object
+      properties:
+        endDate:
+          type: string
+          description: 'yyyy-MM-dd'
+        completed:
+          type: boolean
+    GoalWorkoutRequest:
+      type: object
+      properties:
+        endDate:
+          type: string
+          description: 'yyyy-MM-dd'
+        workoutId:
           type: integer

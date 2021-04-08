@@ -1,20 +1,29 @@
-### API-08: Default Application Responses
-The application server should have reasonable responses where the preceding specifications are incomplete:
-- Most successful requests should return either 200 OK, 201 Created or 204 No
-Content.
-- All instances where a database record is created should return 201 Created, with
-the location of the created resource.
-- All instances where the input validation fails or malformed data is passed to an
-endpoint should return 400 Bad Request.
-- All instances where an unauthenticated user is attempting to access endpoints that
-are strictly authorized (i.e. anything to do with contributor only requests) should
-return 401 Unauthorized, even if the requested resources don’t exist.
-- All instances where the user is authenticated but not authorized to view a particular resource should return 403 Forbidden.
-- All instances where requests are made to unknown endpoints should return 404
-Not Found.
-- Any request where the server enters an error state should fail immediately, without
-exiting the server process, and return 500 Internal Server Error. While in
-development, error messages may be included in the response but once deployed
-the response should not contain any further information. In both cases, the error
-should also be written to the application log for later debug and analysis.
-- Other HTTP response codes may be used where applicable.
+# MeFit
+
+MeFit is a personal fitness goal app which allows users to set weekly workout goals. This repository
+contains the backend portion of the case. 
+
+The backend is written in Java using Spring. PostgreSQL is used to store data and Keycloak for authentication and authorization.
+
+## Deployment
+A running instance can be found at https://expwefit.herokuapp.com and the documentation at <https://expwefit.herokuapp.com/>
+
+After building the project with `gradlew bootJar`, deploy the project to heroku with:
+
+```
+heroku login
+heroku create [appName] --region eu
+heroku container:login
+heroku container:push web --app [appName]
+heroku container:release -a [appName] web
+```
+
+A running instance of Keycloak is required for auth, with three roles defined:`USER`, `CONTRIBUTOR` and `ADMIN` and a role mapper to add these roles to the token under "roles"
+
+The backend requires two clients to be defined in Keycloak: one with access-type "public" for client logins and one with access type "confidential", service account enabled and permissions to administrate users. 
+See `application.properties` for the environment variables. 
+## Developers
+
+Kristian Andersen, Lasse Minet and Tor Leeberg
+
+
