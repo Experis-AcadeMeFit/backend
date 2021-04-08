@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +31,7 @@ public class ProgramController {
     @Autowired
     private WorkoutRepository workoutRepository;
 
+    @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @GetMapping()
     public ResponseEntity<List<Program>> getAllPrograms(){
         List<Program> programs = programRepository.findAll();
@@ -37,6 +39,7 @@ public class ProgramController {
         return new ResponseEntity<>(programs, status);
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<Program> getProgram(@PathVariable long id ){
         Program program = new Program();
@@ -52,6 +55,7 @@ public class ProgramController {
         return new ResponseEntity<>(program,status);
     }
 
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<URI> addProgram(@RequestBody Program program){
         HttpStatus status;
@@ -60,6 +64,7 @@ public class ProgramController {
         return new ResponseEntity<>(URI.create(ApiPaths.PROGRAM_PATH +"/"+ program.getId()), status);
     }
 
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<Program> updateProgram(@PathVariable long id, @RequestBody Map<String, Object> fields) {
         if (id <= 0 || fields == null || fields.isEmpty() || !fields.containsKey("id")
@@ -87,6 +92,7 @@ public class ProgramController {
         return new ResponseEntity<>(returnProgram, HttpStatus.NO_CONTENT);
     }
 
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Program> deleteProgram(@PathVariable long id){
         HttpStatus status;
@@ -102,6 +108,7 @@ public class ProgramController {
         return new ResponseEntity<>(status);
     }
 
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PostMapping("/{id}/workouts")
     public ResponseEntity<Program> addWorkout(@PathVariable long id, @RequestBody WorkoutId workoutId){
         if (!programRepository.existsById(id) || !workoutRepository.existsById(workoutId.getId())){
@@ -117,6 +124,7 @@ public class ProgramController {
         return new ResponseEntity<>(status);
     }
 
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @DeleteMapping({"/{programId}/workouts"})
     public ResponseEntity<Program> removeWorkout(@PathVariable long programId, @RequestBody WorkoutId workoutId){
         HttpStatus status;
