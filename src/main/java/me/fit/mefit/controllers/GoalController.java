@@ -162,7 +162,7 @@ public class GoalController {
     //returnes forbidden if user is not the owner of the goal
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PostMapping("/{id}/goalworkouts")
-    public ResponseEntity<String> addWorkout(@PathVariable Long id,@RequestBody List<GoalWorkoutRequest> goalWorkoutRequests){
+    public ResponseEntity<String> addGoalWorkout(@PathVariable Long id,@RequestBody List<GoalWorkoutRequest> goalWorkoutRequests){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = authAdapter.getUser(authentication.getPrincipal());
 
@@ -199,7 +199,7 @@ public class GoalController {
     //returnes forbidden if user is not the owner of the goal
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PatchMapping("/{goalId}/goalworkouts/{goalWorkoutId}")
-    public ResponseEntity<String> addWorkout(@PathVariable Long goalId, @PathVariable Long goalWorkoutId,
+    public ResponseEntity<String> updateGoalWorkout(@PathVariable Long goalId, @PathVariable Long goalWorkoutId,
                                              @RequestBody GoalWorkoutPatch goalWorkoutPatch){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = authAdapter.getUser(authentication.getPrincipal());
@@ -229,7 +229,7 @@ public class GoalController {
     //Deletes a goalWorkout
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @DeleteMapping("/{goalId}/goalworkouts/{goalWorkoutId}")
-    public ResponseEntity<String> addWorkout(@PathVariable Long goalId, @PathVariable Long goalWorkoutId){
+    public ResponseEntity<String> deleteGoalWorkout(@PathVariable Long goalId, @PathVariable Long goalWorkoutId){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = authAdapter.getUser(authentication.getPrincipal());
 
