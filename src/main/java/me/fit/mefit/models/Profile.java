@@ -5,6 +5,7 @@ import me.fit.mefit.utils.ApiPaths;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -76,5 +77,25 @@ public class Profile {
 
     public void setHeight(int height) {
         this.height = height;
+    }
+
+    public List<Goal> getGoals() {
+        return goals;
+    }
+
+    @JsonGetter("goals")
+    public List<String> goalsUrlGetter() {
+        if(goals != null){
+            List<String> returnGoals = new ArrayList<>();
+            for (Goal goal : goals) {
+               returnGoals.add(ApiPaths.GOAL_PATH +"/"+ goal.getId());
+            }
+            return returnGoals;
+        }
+        return null;
+    }
+
+    public void setGoals(List<Goal> goals) {
+        this.goals = goals;
     }
 }
