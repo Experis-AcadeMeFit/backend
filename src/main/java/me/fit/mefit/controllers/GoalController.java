@@ -107,7 +107,7 @@ public class GoalController {
     */
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PatchMapping("/{id}")
-    public ResponseEntity<Goal> updateGoal(@PathVariable long id, @RequestBody Goal goal) {
+    public ResponseEntity<?> updateGoal(@PathVariable long id, @RequestBody Goal goal) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = authAdapter.getUser(authentication.getPrincipal());
 
@@ -134,7 +134,7 @@ public class GoalController {
         }
 
         goalRepository.save(returnGoal);
-        return new ResponseEntity<>(returnGoal, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /*
