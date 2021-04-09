@@ -32,9 +32,8 @@ public class ExerciseController {
     /*
         Returns a list of currently available exercises arranged alphabetically by Target muscle group.
     */
-
+    @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @GetMapping()
-    //@PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<Exercise>> getAllExercises() {
         List<Exercise> exercises = exerciseRepository.findAllByOrderByTargetMuscleGroup();
         HttpStatus status = HttpStatus.OK;
@@ -44,7 +43,7 @@ public class ExerciseController {
     /*
         Returns a single exercise corresponding to the provided exercise_id.
     */
-
+    @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<Exercise> getExercise(@PathVariable long id) {
         Exercise returnExercise = new Exercise();
@@ -64,6 +63,7 @@ public class ExerciseController {
         application/json. Contributor only.
 
      */
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PostMapping()
     public ResponseEntity<?> createExercise(@RequestBody Exercise exercise) {
         Exercise returnExercise = exerciseRepository.save(exercise);
@@ -76,7 +76,7 @@ public class ExerciseController {
         Accepts appropriate parameters in the exercise body as application/json. Contributor
         only.
     */
-
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<Exercise> updateExercise(@PathVariable long id, @RequestBody Map<String, Object> fields) {
         if (id <= 0 || fields == null || fields.isEmpty() || !fields.containsKey("id")
@@ -89,7 +89,7 @@ public class ExerciseController {
         if (returnExercise == null){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
+        //not allowed to update id
         fields.remove("id");
 
         fields.forEach((k, v) -> {
@@ -106,6 +106,7 @@ public class ExerciseController {
     /*
         Deletes an exercise. Contributor only
     */
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteExercise(@PathVariable long id) {
         HttpStatus status;

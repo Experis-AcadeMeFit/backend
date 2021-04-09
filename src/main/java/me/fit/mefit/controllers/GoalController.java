@@ -42,6 +42,7 @@ public class GoalController {
     @Autowired
     AuthAdapter authAdapter;
 
+    //returnes all the goals of the user calling it
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @GetMapping()
     public ResponseEntity<List<Goal>> getGoals() {
@@ -54,8 +55,8 @@ public class GoalController {
     }
 
     /*
-        Returns detail about current state of the users current goal.
-        Must be able to see the current progress. I.E. Completed workouts assigned to a goal.
+        Returnes a specific goal, by id
+        returnes forbidden if user is trying to get another users goal
     */
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @GetMapping("/{id}")
@@ -106,7 +107,7 @@ public class GoalController {
     */
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PatchMapping("/{id}")
-    public ResponseEntity<Goal> updateGoal(@PathVariable long id, @RequestBody Goal goal) {
+    public ResponseEntity<?> updateGoal(@PathVariable long id, @RequestBody Goal goal) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = authAdapter.getUser(authentication.getPrincipal());
 
@@ -133,11 +134,11 @@ public class GoalController {
         }
 
         goalRepository.save(returnGoal);
-        return new ResponseEntity<>(returnGoal, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /*
-        This should delete a goal of the corresponding goal_id
+        Deletes a goal of the corresponding goal_id
     */
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
@@ -157,9 +158,11 @@ public class GoalController {
         return new ResponseEntity<>(status);
     }
 
+    //takes a goalWorkoutRequest and adds it to the goal given in the path
+    //returnes forbidden if user is not the owner of the goal
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PostMapping("/{id}/goalworkouts")
-    public ResponseEntity<String> addWorkout(@PathVariable Long id,@RequestBody List<GoalWorkoutRequest> goalWorkoutRequests){
+    public ResponseEntity<String> addGoalWorkout(@PathVariable Long id,@RequestBody List<GoalWorkoutRequest> goalWorkoutRequests){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = authAdapter.getUser(authentication.getPrincipal());
 
@@ -192,9 +195,11 @@ public class GoalController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    //takes a goalWorkoutPatch and updates the goalWorkout given in the path
+    //returnes forbidden if user is not the owner of the goal
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PatchMapping("/{goalId}/goalworkouts/{goalWorkoutId}")
-    public ResponseEntity<String> addWorkout(@PathVariable Long goalId, @PathVariable Long goalWorkoutId,
+    public ResponseEntity<String> updateGoalWorkout(@PathVariable Long goalId, @PathVariable Long goalWorkoutId,
                                              @RequestBody GoalWorkoutPatch goalWorkoutPatch){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = authAdapter.getUser(authentication.getPrincipal());
@@ -221,9 +226,10 @@ public class GoalController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    //Deletes a goalWorkout
     @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @DeleteMapping("/{goalId}/goalworkouts/{goalWorkoutId}")
-    public ResponseEntity<String> addWorkout(@PathVariable Long goalId, @PathVariable Long goalWorkoutId){
+    public ResponseEntity<String> deleteGoalWorkout(@PathVariable Long goalId, @PathVariable Long goalWorkoutId){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = authAdapter.getUser(authentication.getPrincipal());
 

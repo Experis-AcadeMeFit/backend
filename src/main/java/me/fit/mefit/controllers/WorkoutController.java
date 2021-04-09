@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +39,7 @@ public class WorkoutController {
     /*
     Returns all workouts
     */
+    @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @GetMapping()
     public ResponseEntity<List<Workout>> getAllWorkouts(){
         List<Workout> workouts = workoutRepository.findAll();
@@ -48,7 +50,7 @@ public class WorkoutController {
     /*
     Returns details of a workout
     */
-
+    @PreAuthorize("hasRole('USER') or hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<Workout> getWorkout(@PathVariable long id) {
         Workout returnWorkout = new Workout();
@@ -67,9 +69,9 @@ public class WorkoutController {
     Creates a new workout. Accepts appropriate parameters in the request body as
     application/json. Contributor only.
     */
-
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PostMapping()
-    public ResponseEntity<URI> createWorkout(@RequestBody WorkoutRequest workoutRequest) {
+    public ResponseEntity<?> createWorkout(@RequestBody WorkoutRequest workoutRequest) {
         Workout returnWorkout = new Workout();
         returnWorkout.setName(workoutRequest.getName());
         returnWorkout.setType(workoutRequest.getType());
@@ -92,9 +94,9 @@ public class WorkoutController {
     Executes a partial update of the workout corresponding to the provided workout_id.
     Accepts appropriate parameters in the request body as application/json. Contributor
     only.
-    If an unauthorized person attempts to update a workout then the server should respond with 403 Forbidden.
+    If an unauthorized person attempts to update a workout then the server responds with 403 Forbidden.
      */
-
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<Workout> updateWorkout(@PathVariable long id, @RequestBody Map<String, Object> fields) {
         if (id <= 0 || fields == null || fields.isEmpty() || !fields.containsKey("id")
@@ -119,7 +121,9 @@ public class WorkoutController {
         });
 
         workoutRepository.save(returnWorkout);
-        return new ResponseEntity<>(returnWorkout, HttpStatus.OK);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 
     /*
@@ -127,10 +131,11 @@ public class WorkoutController {
     Contributor only.
     Deleting a workout may only be done by a contributor and can only delete workouts
     that they have contributed.
-    If an unauthorized person attempts to delete a workout then the server should respond
+    If an unauthorized person attempts to delete a workout then the server responds
     with 403 Forbidden.
 
     */
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Workout> deleteWorkout(@PathVariable long id) {
         HttpStatus status;
@@ -150,6 +155,12 @@ public class WorkoutController {
     SETS
      */
 
+    /*
+    Adds a new set to a workout. Accepts appropriate parameters in the request body as
+    application/json. Contributor only.
+     */
+
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @PostMapping("/{id}/sets")
     public ResponseEntity<Workout> addSet(@PathVariable long id, @RequestBody SetRequest setRequest){
         if (!workoutRepository.existsById(id)){
@@ -166,10 +177,16 @@ public class WorkoutController {
         workout.getExerciseSets().add(workoutSet);
 
         workoutRepository.save(workout);
-        HttpStatus status = HttpStatus.CREATED;
-        return new ResponseEntity<>(workout, status);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 
+    /*
+     Deletes a set
+     Contributor only.
+     */
+    @PreAuthorize("hasRole('CONTRIBUTOR') or hasRole('ADMIN')")
     @DeleteMapping("/{workoutId}/sets/{setId}")
     public ResponseEntity<WorkoutSet> deleteSet(@PathVariable long setId, @PathVariable Long workoutId) {
         HttpStatus status;
