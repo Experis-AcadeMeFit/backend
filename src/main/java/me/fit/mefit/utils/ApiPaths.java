@@ -13,5 +13,5 @@ public class ApiPaths {
     public static final String REFRESH_PATH = BASE_PATH + "/refresh";
     public static final String PUBLIC_PATH = LOGIN_PATH + "/**";
     public static final String PROTECTED_PATH = BASE_PATH + "/**";
-
+    public static final String DOCS_PATH = "/docs/**";
 }

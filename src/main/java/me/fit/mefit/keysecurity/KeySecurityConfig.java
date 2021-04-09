@@ -46,6 +46,7 @@ public class KeySecurityConfig extends WebSecurityConfigurerAdapter {
                     .and()
                     .authorizeRequests().antMatchers( ApiPaths.LOGIN_PATH + "/**" ).permitAll()
                     .antMatchers( HttpMethod.POST, ApiPaths.USER_PATH ).permitAll()
+                    .antMatchers(ApiPaths.DOCS_PATH).permitAll()
                     .antMatchers( ApiPaths.PROTECTED_PATH ).permitAll().anyRequest().authenticated()
                     .and()
                     .oauth2ResourceServer()

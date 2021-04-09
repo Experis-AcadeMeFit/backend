@@ -6,7 +6,7 @@ contains the backend portion of the case.
 The backend is written in Java using Spring. PostgreSQL is used to store data and Keycloak for authentication and authorization.
 
 ## Deployment
-A running instance can be found at https://expwefit.herokuapp.com and the documentation at <https://expwefit.herokuapp.com/>
+A running instance can be found at https://expwefit.herokuapp.com and the documentation at <https://expwefit.herokuapp.com/docs/index.html>
 
 After building the project with `gradlew bootJar`, deploy the project to heroku with:
 
